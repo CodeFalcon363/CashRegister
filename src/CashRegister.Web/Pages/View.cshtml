@@ -1,0 +1,205 @@
+@page
+@model CashRegister.Web.Pages.ViewModel
+@{
+    ViewData["Title"] = "View Entries";
+}
+
+<div class="container-fluid mt-3">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-2">
+            <div class="card mb-3">
+                <div class="card-header bg-info text-white">
+                    <h6 class="mb-0"><i class="bi bi-list"></i> Navigation</h6>
+                </div>
+                <div class="list-group list-group-flush">
+                    <a href="/View" class="list-group-item list-group-item-action @(string.IsNullOrEmpty(Model.BranchFilter) && !Model.DateFrom.HasValue ? "active" : "")">
+                        <i class="bi bi-eye"></i> View All Entries
+                    </a>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-funnel"></i> Filters</h6>
+                </div>
+                <div class="card-body">
+                    <form method="get">
+                        <div class="mb-3">
+                            <label class="form-label small">Branch Code</label>
+                            <input type="text" name="BranchFilter" class="form-control form-control-sm" value="@Model.BranchFilter" placeholder="e.g. 001" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small">Date From</label>
+                            <input type="date" name="DateFrom" class="form-control form-control-sm" value="@Model.DateFrom?.ToString("yyyy-MM-dd")" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small">Date To</label>
+                            <input type="date" name="DateTo" class="form-control form-control-sm" value="@Model.DateTo?.ToString("yyyy-MM-dd")" />
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-sm btn-primary">
+                                <i class="bi bi-search"></i> Apply Filters
+                            </button>
+                            <a href="/View" class="btn btn-sm btn-secondary">
+                                <i class="bi bi-x-circle"></i> Clear
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-10">
+            <h3>View Approved Entries</h3>
+
+            @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+            {
+                <div class="alert alert-danger">@Model.ErrorMessage</div>
+            }
+
+            <div class="row">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Approved Entries (@Model.ApprovedEntries.Count)</h5>
+                </div>
+                <div class="list-group list-group-flush" style="max-height: 600px; overflow-y: auto;">
+                    @if (Model.ApprovedEntries.Any())
+                    {
+                        @foreach (var entry in Model.ApprovedEntries)
+                        {
+                            <a href="?entryId=@entry.Id&BranchFilter=@Model.BranchFilter&DateFrom=@Model.DateFrom?.ToString("yyyy-MM-dd")&DateTo=@Model.DateTo?.ToString("yyyy-MM-dd")"
+                               class="list-group-item list-group-item-action @(Model.EntryId == entry.Id ? "active" : "")">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">@entry.Branch.BranchName</h6>
+                                    <small>@entry.EntryDate.ToString("yyyy-MM-dd")</small>
+                                </div>
+                                <p class="mb-1"><small>Branch: @entry.Branch.BranchCode</small></p>
+                                <p class="mb-1"><small>Created by: @entry.CreatedBy.Username</small></p>
+                                <small class="text-muted">Authorized: @entry.AuthorizedAt?.ToString("yyyy-MM-dd HH:mm")</small>
+                            </a>
+                        }
+                    }
+                    else
+                    {
+                        <div class="list-group-item">
+                            <p class="text-muted mb-0">No approved entries found</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            @if (Model.SelectedEntry != null)
+            {
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Entry Details - @Model.SelectedEntry.EntryDate.ToString("yyyy-MM-dd")</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <p><strong>Branch:</strong> @Model.SelectedEntry.Branch.BranchName (@Model.SelectedEntry.Branch.BranchCode)</p>
+                                <p><strong>Created By:</strong> @Model.SelectedEntry.CreatedBy.Username</p>
+                                <p><strong>Created At:</strong> @Model.SelectedEntry.CreatedAt.ToString("yyyy-MM-dd HH:mm")</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Authorized By:</strong> @Model.SelectedEntry.AuthorizedBy?.Username</p>
+                                <p><strong>Authorized At:</strong> @Model.SelectedEntry.AuthorizedAt?.ToString("yyyy-MM-dd HH:mm")</p>
+                                <p><strong>Status:</strong> <span class="badge bg-success">@Model.SelectedEntry.Status</span></p>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover table-sm">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Seq</th>
+                                        <th>Type</th>
+                                        <th class="text-end">1000</th>
+                                        <th class="text-end">500</th>
+                                        <th class="text-end">200</th>
+                                        <th class="text-end">100</th>
+                                        <th class="text-end">50</th>
+                                        <th class="text-end">20</th>
+                                        <th class="text-end">10</th>
+                                        <th class="text-end">5</th>
+                                        <th class="text-end">2</th>
+                                        <th class="text-end">1</th>
+                                        <th class="text-end">Coin</th>
+                                        <th class="text-end">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @{
+                                        decimal runningTotal = 0;
+                                    }
+                                    @foreach (var row in Model.SelectedEntry.Rows.OrderBy(r => r.SequenceOrder))
+                                    {
+                                        var rowTotal = row.GetTotal();
+                                        if (row.IsOutflow) rowTotal = -rowTotal;
+                                        runningTotal += rowTotal;
+                                        var rowClass = row.IsOutflow ? "table-danger" : "";
+                                        <tr class="@rowClass">
+                                            <td>@row.SequenceOrder</td>
+                                            <td>@row.RowType</td>
+                                            <td class="text-end">@(row.Amount1000 > 0 ? row.Amount1000.ToString("N2") : "-")</td>
+                                            <td class="text-end">@(row.Amount500 > 0 ? row.Amount500.ToString("N2") : "-")</td>
+                                            <td class="text-end">@(row.Amount200 > 0 ? row.Amount200.ToString("N2") : "-")</td>
+                                            <td class="text-end">@(row.Amount100 > 0 ? row.Amount100.ToString("N2") : "-")</td>
+                                            <td class="text-end">@(row.Amount50 > 0 ? row.Amount50.ToString("N2") : "-")</td>
+                                            <td class="text-end">@(row.Amount20 > 0 ? row.Amount20.ToString("N2") : "-")</td>
+                                            <td class="text-end">@(row.Amount10 > 0 ? row.Amount10.ToString("N2") : "-")</td>
+                                            <td class="text-end">@(row.Amount5 > 0 ? row.Amount5.ToString("N2") : "-")</td>
+                                            <td class="text-end">@(row.Amount2 > 0 ? row.Amount2.ToString("N2") : "-")</td>
+                                            <td class="text-end">@(row.Amount1 > 0 ? row.Amount1.ToString("N2") : "-")</td>
+                                            <td class="text-end">@(row.CoinAmount > 0 ? row.CoinAmount.ToString("N2") : "-")</td>
+                                            <td class="text-end fw-bold">@rowTotal.ToString("N2")</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                                <tfoot class="table-light fw-bold">
+                                    <tr>
+                                        <td colspan="13" class="text-end">Cumulative Total:</td>
+                                        <td class="text-end">@runningTotal.ToString("N2")</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+
+                        <div class="mt-3">
+                            <button onclick="window.print()" class="btn btn-outline-primary">
+                                Print Entry
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="card">
+                    <div class="card-body text-center text-muted">
+                        <p>Select an entry from the list to view details</p>
+                    </div>
+                </div>
+            }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        @@media print {
+            .btn, .card-header, nav, .col-md-4 {
+                display: none !important;
+            }
+            .col-md-8 {
+                width: 100% !important;
+            }
+        }
+    </style>
+}

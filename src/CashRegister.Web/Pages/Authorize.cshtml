@@ -1,0 +1,206 @@
+@page
+@model CashRegister.Web.Pages.AuthorizeModel
+@{
+    ViewData["Title"] = "Authorize Entries";
+}
+
+<div class="container-fluid mt-3">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-2">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h6 class="mb-0"><i class="bi bi-list"></i> Navigation</h6>
+                </div>
+                <div class="list-group list-group-flush">
+                    <a href="/Authorize" class="list-group-item list-group-item-action active">
+                        <i class="bi bi-hourglass-split"></i> Pending Authorization
+                        @if (Model.PendingEntries?.Count > 0)
+                        {
+                            <span class="badge bg-warning float-end">@Model.PendingEntries.Count</span>
+                        }
+                    </a>
+                    <a href="/View" class="list-group-item list-group-item-action">
+                        <i class="bi bi-check-circle"></i> View Authorized
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-10">
+            <h3>Authorize Cash Entries</h3>
+
+            @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+            {
+                <div class="alert alert-danger">@Model.ErrorMessage</div>
+            }
+
+            @if (!string.IsNullOrEmpty(Model.SuccessMessage))
+            {
+                <div class="alert alert-success">@Model.SuccessMessage</div>
+            }
+
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Pending Entries</h5>
+                        </div>
+                <div class="list-group list-group-flush">
+                    @if (Model.PendingEntries.Any())
+                    {
+                        @foreach (var entry in Model.PendingEntries)
+                        {
+                            <a href="?entryId=@entry.Id" class="list-group-item list-group-item-action @(Model.EntryId == entry.Id ? "active" : "")">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">@entry.EntryDate.ToString("yyyy-MM-dd")</h6>
+                                    <small>@entry.Status</small>
+                                </div>
+                                <p class="mb-1">Created by: @entry.CreatedBy.Username</p>
+                                <small>@entry.CreatedAt.ToString("yyyy-MM-dd HH:mm")</small>
+                            </a>
+                        }
+                    }
+                    else
+                    {
+                        <div class="list-group-item">
+                            <p class="text-muted mb-0">No pending entries</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            @if (Model.SelectedEntry != null)
+            {
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Entry Details - @Model.SelectedEntry.EntryDate.ToString("yyyy-MM-dd")</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <p><strong>Branch:</strong> @Model.SelectedEntry.Branch.BranchName (@Model.SelectedEntry.Branch.BranchCode)</p>
+                            <p><strong>Created By:</strong> @Model.SelectedEntry.CreatedBy.Username</p>
+                            <p><strong>Created At:</strong> @Model.SelectedEntry.CreatedAt.ToString("yyyy-MM-dd HH:mm")</p>
+                            <p><strong>Status:</strong> <span class="badge bg-warning">@Model.SelectedEntry.Status</span></p>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover table-sm">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Seq</th>
+                                        <th>Type</th>
+                                        <th class="text-end">1000</th>
+                                        <th class="text-end">500</th>
+                                        <th class="text-end">200</th>
+                                        <th class="text-end">100</th>
+                                        <th class="text-end">50</th>
+                                        <th class="text-end">20</th>
+                                        <th class="text-end">10</th>
+                                        <th class="text-end">5</th>
+                                        <th class="text-end">2</th>
+                                        <th class="text-end">1</th>
+                                        <th class="text-end">Coin</th>
+                                        <th class="text-end">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @{
+                                        decimal runningTotal = 0;
+                                    }
+                                    @foreach (var row in Model.SelectedEntry.Rows.OrderBy(r => r.SequenceOrder))
+                                    {
+                                        var rowTotal = row.GetTotal();
+                                        if (row.IsOutflow) rowTotal = -rowTotal;
+                                        runningTotal += rowTotal;
+                                        var rowClass = row.IsOutflow ? "table-danger" : "";
+                                        <tr class="@rowClass">
+                                            <td>@row.SequenceOrder</td>
+                                            <td>@row.RowType</td>
+                                            <td class="text-end">@(row.Amount1000 > 0 ? row.Amount1000.ToString("N2") : "-")</td>
+                                            <td class="text-end">@(row.Amount500 > 0 ? row.Amount500.ToString("N2") : "-")</td>
+                                            <td class="text-end">@(row.Amount200 > 0 ? row.Amount200.ToString("N2") : "-")</td>
+                                            <td class="text-end">@(row.Amount100 > 0 ? row.Amount100.ToString("N2") : "-")</td>
+                                            <td class="text-end">@(row.Amount50 > 0 ? row.Amount50.ToString("N2") : "-")</td>
+                                            <td class="text-end">@(row.Amount20 > 0 ? row.Amount20.ToString("N2") : "-")</td>
+                                            <td class="text-end">@(row.Amount10 > 0 ? row.Amount10.ToString("N2") : "-")</td>
+                                            <td class="text-end">@(row.Amount5 > 0 ? row.Amount5.ToString("N2") : "-")</td>
+                                            <td class="text-end">@(row.Amount2 > 0 ? row.Amount2.ToString("N2") : "-")</td>
+                                            <td class="text-end">@(row.Amount1 > 0 ? row.Amount1.ToString("N2") : "-")</td>
+                                            <td class="text-end">@(row.CoinAmount > 0 ? row.CoinAmount.ToString("N2") : "-")</td>
+                                            <td class="text-end fw-bold">@rowTotal.ToString("N2")</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                                <tfoot class="table-light fw-bold">
+                                    <tr>
+                                        <td colspan="13" class="text-end">Cumulative Total:</td>
+                                        <td class="text-end">@runningTotal.ToString("N2")</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+
+                        <div class="mt-4">
+                            <form method="post">
+                                <input type="hidden" name="entryId" value="@Model.SelectedEntry.Id" />
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <button type="submit" asp-page-handler="Approve" class="btn btn-success w-100">
+                                            Approve Entry
+                                        </button>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <button type="button" class="btn btn-danger w-100" data-bs-toggle="modal" data-bs-target="#rejectModal">
+                                            Reject Entry
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="card">
+                    <div class="card-body text-center text-muted">
+                        <p>Select an entry from the list to view details</p>
+                    </div>
+                </div>
+            }
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (Model.SelectedEntry != null)
+{
+    <div class="modal fade" id="rejectModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form method="post" asp-page-handler="Reject">
+                    <input type="hidden" name="entryId" value="@Model.SelectedEntry.Id" />
+                    <div class="modal-header">
+                        <h5 class="modal-title">Reject Entry</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label asp-for="RejectionReason" class="form-label">Reason for Rejection *</label>
+                            <textarea asp-for="RejectionReason" class="form-control" rows="4" required></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-danger">Reject Entry</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}

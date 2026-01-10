@@ -1,0 +1,23 @@
+FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
+WORKDIR /app
+EXPOSE 8080
+EXPOSE 8081
+
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+WORKDIR /src
+COPY ["src/CashRegister.Web/CashRegister.Web.csproj", "CashRegister.Web/"]
+COPY ["src/CashRegister.Infrastructure/CashRegister.Infrastructure.csproj", "CashRegister.Infrastructure/"]
+COPY ["src/CashRegister.Application/CashRegister.Application.csproj", "CashRegister.Application/"]
+COPY ["src/CashRegister.Domain/CashRegister.Domain.csproj", "CashRegister.Domain/"]
+RUN dotnet restore "CashRegister.Web/CashRegister.Web.csproj"
+COPY src/ .
+WORKDIR "/src/CashRegister.Web"
+RUN dotnet build "CashRegister.Web.csproj" -c Release -o /app/build
+
+FROM build AS publish
+RUN dotnet publish "CashRegister.Web.csproj" -c Release -o /app/publish /p:UseAppHost=false
+
+FROM base AS final
+WORKDIR /app
+COPY --from=publish /app/publish .
+ENTRYPOINT ["dotnet", "CashRegister.Web.dll"]

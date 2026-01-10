@@ -1,0 +1,49 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Welcome";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 text-center">
+            <h1 class="display-3 mb-4">Cash Register System</h1>
+            <p class="lead text-muted mb-4">
+                Daily cash movement register
+            </p>
+
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <div class="alert alert-info">
+                    <p class="mb-2">You are already logged in as <strong>@User.Identity.Name</strong></p>
+                    <div class="d-flex gap-2 justify-content-center">
+                        @if (User.IsInRole("Inputer"))
+                        {
+                            <a href="/CashEntry" class="btn btn-primary">Go to Cash Entry</a>
+                        }
+                        @if (User.IsInRole("Authorizer"))
+                        {
+                            <a href="/Authorize" class="btn btn-success">Go to Authorize</a>
+                        }
+                        @if (User.IsInRole("Viewer"))
+                        {
+                            <a href="/View" class="btn btn-info">Go to View Entries</a>
+                        }
+                        <a href="/Logout" class="btn btn-outline-secondary">Logout</a>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="card shadow-sm">
+                    <div class="card-body p-5">
+                        <h4 class="card-title mb-4">Please login to continue</h4>
+                        <a href="/Login" class="btn btn-primary btn-lg px-5">
+                            <i class="bi bi-box-arrow-in-right"></i> Login
+                        </a>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
