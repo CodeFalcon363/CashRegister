@@ -4,6 +4,7 @@ using CashRegister.Infrastructure.Services;
 using CashRegister.Web.Authorization;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using DotNetEnv;
 
@@ -37,6 +38,11 @@ builder.Configuration["Jwt:ExpiryMinutes"] = Environment.GetEnvironmentVariable(
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 
+// Data Protection - persist keys to database to survive container restarts
+builder.Services.AddDataProtection()
+    .PersistKeysToDbContext<ApplicationDbContext>()
+    .SetApplicationName("CashRegisterApp");
+
 // Application Services
 builder.Services.AddScoped<ITokenService, TokenService>(); // Required by AuthService
 builder.Services.AddScoped<IPasswordService, PasswordService>();
@@ -49,6 +55,7 @@ builder.Services.AddScoped<IBranchService, BranchService>();
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
+        options.Cookie.Name = ".CashRegister.Auth";
         options.LoginPath = "/Login";
         options.LogoutPath = "/Logout";
         options.AccessDeniedPath = "/AccessDenied";
@@ -73,6 +80,14 @@ builder.Services.AddAuthorization(options =>
 // Custom authorization handler for branch-level access control
 builder.Services.AddSingleton<IAuthorizationHandler, BranchAccessHandler>();
 
+// Configure Antiforgery with unique cookie name to avoid conflicts with old tokens
+builder.Services.AddAntiforgery(options =>
+{
+    options.Cookie.Name = ".CashRegister.Antiforgery";
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+});
+
 builder.Services.AddRazorPages();
 
 var app = builder.Build();
@@ -84,6 +99,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHttpsRedirection(); // Only redirect to HTTPS in production
 }
 
+app.UseStaticFiles();
 app.UseRouting();
 
 app.UseAuthentication();

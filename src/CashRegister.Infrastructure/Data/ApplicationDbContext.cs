@@ -1,4 +1,5 @@
 using CashRegister.Domain.Entities;
+using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
 
@@ -6,7 +7,8 @@ namespace CashRegister.Infrastructure.Data;
 
 // EF Core database context for the cash register system.
 // Automatically updates LastModifiedAt timestamp on all modified entities during SaveChanges.
-public class ApplicationDbContext : DbContext
+// Implements IDataProtectionKeyContext to persist data protection keys in database.
+public class ApplicationDbContext : DbContext, IDataProtectionKeyContext
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
     {
@@ -16,6 +18,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<Branch> Branches => Set<Branch>();
     public DbSet<CashEntry> CashEntries => Set<CashEntry>();
     public DbSet<CashEntryRow> CashEntryRows => Set<CashEntryRow>();
+    public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
