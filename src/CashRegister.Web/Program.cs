@@ -113,3 +113,6 @@ app.MapRazorPages()
 await DbInitializer.InitializeAsync(app.Services);
 
 app.Run();
+
+// Make Program class accessible to integration tests
+public partial class Program { }
