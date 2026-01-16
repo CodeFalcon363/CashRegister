@@ -25,7 +25,6 @@ function calculateAll() {
     const vaultClosingBalance = calculateVaultClosingBalance();
     const vaultFigure = calculateVaultFigure(vaultClosingBalance);
     calculateTillTotal(vaultClosingBalance, vaultFigure);
-    calculateCumulativeTotals();
 }
 
 function calculateRowTotals() {
@@ -158,35 +157,6 @@ function calculateTillTotal(vaultClosingBalance, vaultFigure) {
 
     const totalInput = tillTotalRow.querySelector('.row-total');
     totalInput.value = formatCurrency(total);
-}
-
-function calculateCumulativeTotals() {
-    const rows = document.querySelectorAll('#cashEntryTable tbody tr');
-    let cumulative = 0;
-
-    rows.forEach(row => {
-        const rowType = row.dataset.rowType;
-        const totalInput = row.querySelector('.row-total');
-        const cumulativeInput = row.querySelector('.cumulative-total');
-
-        // Hide cumulative for Till Total and Vault Closing Balance
-        if (rowType === 'Till Total' || rowType === 'Vault Closing Balance') {
-            cumulativeInput.value = '';
-            return;
-        }
-
-        const rowTotal = parseCurrency(totalInput.value);
-        const isOutflow = row.dataset.isOutflow === 'true';
-
-        // Add inflows, subtract outflows
-        if (isOutflow) {
-            cumulative -= rowTotal;
-        } else {
-            cumulative += rowTotal;
-        }
-
-        cumulativeInput.value = formatCurrency(cumulative);
-    });
 }
 
 function formatCurrency(value) {

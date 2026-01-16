@@ -6,46 +6,60 @@
 
 <div class="container-fluid mt-3">
     <div class="row">
+        <!-- Sidebar Toggle Button (visible on small screens) -->
+        <div class="col-12 d-md-none mb-2">
+            <button class="btn btn-info w-100" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarCollapse" aria-expanded="false" aria-controls="sidebarCollapse">
+                <i class="bi bi-list"></i> Toggle Menu
+            </button>
+        </div>
+
         <!-- Sidebar -->
         <div class="col-md-2">
-            <div class="card mb-3">
-                <div class="card-header bg-info text-white">
-                    <h6 class="mb-0"><i class="bi bi-list"></i> Navigation</h6>
-                </div>
-                <div class="list-group list-group-flush">
-                    <a href="/View" class="list-group-item list-group-item-action @(string.IsNullOrEmpty(Model.BranchFilter) && !Model.DateFrom.HasValue ? "active" : "")">
-                        <i class="bi bi-eye"></i> View All Entries
-                    </a>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-header">
-                    <h6 class="mb-0"><i class="bi bi-funnel"></i> Filters</h6>
-                </div>
-                <div class="card-body">
-                    <form method="get">
-                        <div class="mb-3">
-                            <label class="form-label small">Branch Code</label>
-                            <input type="text" name="BranchFilter" class="form-control form-control-sm" value="@Model.BranchFilter" placeholder="e.g. 001" />
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label small">Date From</label>
-                            <input type="date" name="DateFrom" class="form-control form-control-sm" value="@Model.DateFrom?.ToString("yyyy-MM-dd")" />
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label small">Date To</label>
-                            <input type="date" name="DateTo" class="form-control form-control-sm" value="@Model.DateTo?.ToString("yyyy-MM-dd")" />
-                        </div>
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-sm btn-primary">
-                                <i class="bi bi-search"></i> Apply Filters
-                            </button>
-                            <a href="/View" class="btn btn-sm btn-secondary">
-                                <i class="bi bi-x-circle"></i> Clear
+            <div class="collapse d-md-block" id="sidebarCollapse">
+                <div class="card mb-3">
+                    <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0"><i class="bi bi-list"></i> Navigation</h6>
+                        <button class="btn btn-sm btn-outline-light d-none d-md-inline-block" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarContent" aria-expanded="true">
+                            <i class="bi bi-chevron-up"></i>
+                        </button>
+                    </div>
+                    <div class="collapse show" id="sidebarContent">
+                        <div class="list-group list-group-flush">
+                            <a href="/View" class="list-group-item list-group-item-action @(string.IsNullOrEmpty(Model.BranchFilter) && !Model.DateFrom.HasValue ? "active" : "")">
+                                <i class="bi bi-eye"></i> View All Entries
                             </a>
                         </div>
-                    </form>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="bi bi-funnel"></i> Filters</h6>
+                    </div>
+                    <div class="card-body">
+                        <form method="get">
+                            <div class="mb-3">
+                                <label class="form-label small">Branch Code</label>
+                                <input type="text" name="BranchFilter" class="form-control form-control-sm" value="@Model.BranchFilter" placeholder="e.g. 001" />
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small">Date From</label>
+                                <input type="date" name="DateFrom" class="form-control form-control-sm" value="@Model.DateFrom?.ToString("yyyy-MM-dd")" />
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small">Date To</label>
+                                <input type="date" name="DateTo" class="form-control form-control-sm" value="@Model.DateTo?.ToString("yyyy-MM-dd")" />
+                            </div>
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-sm btn-primary">
+                                    <i class="bi bi-search"></i> Apply Filters
+                                </button>
+                                <a href="/View" class="btn btn-sm btn-secondary">
+                                    <i class="bi bi-x-circle"></i> Clear
+                                </a>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
@@ -134,14 +148,10 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @{
-                                        decimal runningTotal = 0;
-                                    }
                                     @foreach (var row in Model.SelectedEntry.Rows.OrderBy(r => r.SequenceOrder))
                                     {
                                         var rowTotal = row.GetTotal();
                                         if (row.IsOutflow) rowTotal = -rowTotal;
-                                        runningTotal += rowTotal;
                                         var rowClass = row.IsOutflow ? "table-danger" : "";
                                         <tr class="@rowClass">
                                             <td>@row.SequenceOrder</td>
@@ -161,12 +171,6 @@
                                         </tr>
                                     }
                                 </tbody>
-                                <tfoot class="table-light fw-bold">
-                                    <tr>
-                                        <td colspan="13" class="text-end">Cumulative Total:</td>
-                                        <td class="text-end">@runningTotal.ToString("N2")</td>
-                                    </tr>
-                                </tfoot>
                             </table>
                         </div>
 

@@ -91,12 +91,21 @@ public class CashEntryModel : PageModel
                 // Load or create today's entry
                 var existingEntry = await _cashEntryService.GetEntryByBranchAndDateAsync(branchId, today);
 
-                if (existingEntry != null)
+                // Only load existing entry if it's a Draft (editable)
+                if (existingEntry != null && existingEntry.Status == EntryStatus.Draft)
                 {
                     Entry = MapToViewModel(existingEntry);
                 }
+                else if (existingEntry != null && (existingEntry.Status == EntryStatus.Submitted || existingEntry.Status == EntryStatus.Approved))
+                {
+                    // Entry exists but is already submitted/approved - show message, don't allow new entry
+                    ErrorMessage = existingEntry.Status == EntryStatus.Submitted
+                        ? "Today's entry has been submitted and is pending authorization. Use 'View Submitted Entries' to check its status."
+                        : "Today's entry has already been approved. No new entry can be created for today.";
+                }
                 else
                 {
+                    // No entry exists for today - create new
                     Entry.EntryDate = today;
                     Entry.Rows = InitializeRows();
 

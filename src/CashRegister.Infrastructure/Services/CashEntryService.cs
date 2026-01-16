@@ -40,6 +40,7 @@ public class CashEntryService : ICashEntryService
         var query = _context.CashEntries
             .Include(ce => ce.CreatedBy)
             .Include(ce => ce.AuthorizedBy)
+            .Include(ce => ce.Rows)
             .Where(ce => ce.BranchId == branchId);
 
         if (status.HasValue)
