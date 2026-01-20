@@ -82,3 +82,5 @@ public record ApproveCashEntryRequest(int EntryId);
 public record RejectCashEntryRequest(int EntryId, string RejectionReason);
 
 public record ChangeEntryStatusRequest(int EntryId, string NewStatus, string? RejectionReason);
+
+public record RowTemplateDto(string RowType, bool IsOutflow, int SequenceOrder);

@@ -13,11 +13,13 @@ public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
     private readonly ITokenService _tokenService;
+    private readonly IUserService _userService;
 
-    public AuthController(IAuthService authService, ITokenService tokenService)
+    public AuthController(IAuthService authService, ITokenService tokenService, IUserService userService)
     {
         _authService = authService;
         _tokenService = tokenService;
+        _userService = userService;
     }
 
     [HttpPost("login")]
@@ -61,12 +63,10 @@ public class AuthController : ControllerBase
 
     [HttpPost("refresh")]
     [AllowAnonymous]
-    public ActionResult<TokenResponse> RefreshToken([FromBody] RefreshTokenRequest request)
+    public async Task<ActionResult<TokenResponse>> RefreshToken([FromBody] RefreshTokenRequest request)
     {
         try
         {
-            // In a production app, you would validate the refresh token against a database
-            // For now, we'll just generate new tokens
             var userId = _tokenService.ValidateToken(request.RefreshToken);
 
             if (userId == null)
@@ -74,9 +74,21 @@ public class AuthController : ControllerBase
                 return Unauthorized(new { message = "Invalid refresh token" });
             }
 
-            // Generate new tokens
-            // Note: In production, you'd fetch the user from DB and generate tokens
-            var accessToken = _tokenService.GenerateRefreshToken();
+            // Fetch user from database to generate proper access token with claims
+            var user = await _userService.GetUserByIdAsync(userId.Value);
+
+            if (user == null)
+            {
+                return Unauthorized(new { message = "User not found" });
+            }
+
+            if (!user.IsActive)
+            {
+                return Unauthorized(new { message = "Account is deactivated" });
+            }
+
+            // Generate new access token and refresh token
+            var accessToken = _tokenService.GenerateAccessToken(user);
             var refreshToken = _tokenService.GenerateRefreshToken();
 
             var response = new TokenResponse(accessToken, refreshToken);

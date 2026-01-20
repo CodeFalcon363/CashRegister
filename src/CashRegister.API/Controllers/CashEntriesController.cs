@@ -137,6 +137,164 @@ public class CashEntriesController : ControllerBase
         }
     }
 
+    [HttpGet("by-date")]
+    [Authorize(Roles = "Inputer,Authorizer,Viewer")]
+    public async Task<ActionResult<CashEntryDto?>> GetEntryByDate([FromQuery] DateTime date)
+    {
+        try
+        {
+            var branchId = GetBranchId();
+            var entry = await _cashEntryService.GetEntryByBranchAndDateAsync(branchId, date);
+
+            if (entry == null)
+            {
+                return Ok(null);
+            }
+
+            var entryDto = new CashEntryDto(
+                entry.Id,
+                entry.BranchId,
+                entry.Branch?.BranchName ?? "",
+                entry.EntryDate,
+                entry.Status.ToString(),
+                entry.CreatedByUserId,
+                entry.CreatedBy?.Username ?? "",
+                entry.CreatedAt,
+                entry.AuthorizedByUserId,
+                entry.AuthorizedBy?.Username,
+                entry.AuthorizedAt,
+                entry.RejectionReason,
+                entry.Rows.Select(r => new CashEntryRowDto(
+                    r.Id,
+                    r.SequenceOrder,
+                    r.RowType,
+                    r.IsOutflow,
+                    r.Amount1000,
+                    r.Amount500,
+                    r.Amount200,
+                    r.Amount100,
+                    r.Amount50,
+                    r.Amount20,
+                    r.Amount10,
+                    r.Amount5,
+                    r.Amount2,
+                    r.Amount1,
+                    r.CoinAmount,
+                    r.GetTotal()
+                )).ToList()
+            );
+
+            return Ok(entryDto);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    [HttpGet("previous-day")]
+    [Authorize(Roles = "Inputer")]
+    public async Task<ActionResult<CashEntryDto?>> GetPreviousDayEntry([FromQuery] DateTime date)
+    {
+        try
+        {
+            var branchId = GetBranchId();
+            var entry = await _cashEntryService.GetPreviousDayEntryAsync(branchId, date);
+
+            if (entry == null)
+            {
+                return Ok(null);
+            }
+
+            var entryDto = new CashEntryDto(
+                entry.Id,
+                entry.BranchId,
+                entry.Branch?.BranchName ?? "",
+                entry.EntryDate,
+                entry.Status.ToString(),
+                entry.CreatedByUserId,
+                entry.CreatedBy?.Username ?? "",
+                entry.CreatedAt,
+                entry.AuthorizedByUserId,
+                entry.AuthorizedBy?.Username,
+                entry.AuthorizedAt,
+                entry.RejectionReason,
+                entry.Rows.Select(r => new CashEntryRowDto(
+                    r.Id,
+                    r.SequenceOrder,
+                    r.RowType,
+                    r.IsOutflow,
+                    r.Amount1000,
+                    r.Amount500,
+                    r.Amount200,
+                    r.Amount100,
+                    r.Amount50,
+                    r.Amount20,
+                    r.Amount10,
+                    r.Amount5,
+                    r.Amount2,
+                    r.Amount1,
+                    r.CoinAmount,
+                    r.GetTotal()
+                )).ToList()
+            );
+
+            return Ok(entryDto);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    [HttpGet("row-template")]
+    [Authorize(Roles = "Inputer")]
+    public ActionResult<List<RowTemplateDto>> GetRowTemplate()
+    {
+        var rowDefinitions = new List<RowTemplateDto>
+        {
+            new("Opening Balance", false, 1),
+            new("Till Out", true, 2),
+            new("Vault Out Bulk", true, 3),
+            new("Vault Out Teller 1", true, 4),
+            new("Vault Out Teller 2", true, 5),
+            new("Vault Out Teller 3", true, 6),
+            new("Vault Out Teller 4", true, 7),
+            new("Vault Out Teller 5", true, 8),
+            new("Vault Out Teller 6", true, 9),
+            new("Load ATM 1", true, 10),
+            new("Load ATM 2", true, 11),
+            new("Load ATM 3", true, 12),
+            new("Load ATM 4", true, 13),
+            new("Load ATM 5", true, 14),
+            new("Load ATM 6", true, 15),
+            new("Load ATM 7", true, 16),
+            new("Load ATM 8", true, 17),
+            new("Unload ATM 1", false, 18),
+            new("Unload ATM 2", false, 19),
+            new("Unload ATM 3", false, 20),
+            new("Unload ATM 4", false, 21),
+            new("Unload ATM 5", false, 22),
+            new("Unload ATM 6", false, 23),
+            new("Unload ATM 7", false, 24),
+            new("Unload ATM 8", false, 25),
+            new("BSU SUPPLY", false, 26),
+            new("BSU EVACUATION", true, 27),
+            new("Vault In Teller 1", false, 28),
+            new("Vault In Teller 2", false, 29),
+            new("Vault In Teller 3", false, 30),
+            new("Vault In Teller 4", false, 31),
+            new("Vault In Teller 5", false, 32),
+            new("Vault In Teller 6", false, 33),
+            new("Vault In Bulk", false, 34),
+            new("Vault Figure", false, 35),
+            new("Till Total", false, 36),
+            new("Vault Closing Balance", false, 37)
+        };
+
+        return Ok(rowDefinitions);
+    }
+
     [HttpPost]
     [Authorize(Roles = "Inputer")]
     public async Task<ActionResult<CashEntryDto>> CreateEntry([FromBody] CreateCashEntryRequest request)

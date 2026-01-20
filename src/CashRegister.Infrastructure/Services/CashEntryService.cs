@@ -31,6 +31,9 @@ public class CashEntryService : ICashEntryService
     public async Task<CashEntry?> GetEntryByBranchAndDateAsync(int branchId, DateTime date)
     {
         return await _context.CashEntries
+            .Include(ce => ce.Branch)
+            .Include(ce => ce.CreatedBy)
+            .Include(ce => ce.AuthorizedBy)
             .Include(ce => ce.Rows.OrderBy(r => r.SequenceOrder))
             .FirstOrDefaultAsync(ce => ce.BranchId == branchId && ce.EntryDate.Date == date.Date);
     }
@@ -153,6 +156,9 @@ public class CashEntryService : ICashEntryService
     {
         var previousDate = currentDate.AddDays(-1);
         return await _context.CashEntries
+            .Include(ce => ce.Branch)
+            .Include(ce => ce.CreatedBy)
+            .Include(ce => ce.AuthorizedBy)
             .Include(ce => ce.Rows.OrderBy(r => r.SequenceOrder))
             .Where(ce => ce.BranchId == branchId
                 && ce.EntryDate.Date == previousDate.Date
@@ -173,6 +179,7 @@ public class CashEntryService : ICashEntryService
             .Include(ce => ce.Branch)
             .Include(ce => ce.CreatedBy)
             .Include(ce => ce.AuthorizedBy)
+            .Include(ce => ce.Rows)
             .OrderByDescending(ce => ce.EntryDate)
             .ToListAsync();
     }
