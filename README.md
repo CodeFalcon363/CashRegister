@@ -8,7 +8,7 @@ The Cash Register System provides daily cash tracking for bank branches with a s
 
 ## Key Features
 
-- **Maker-Checker Workflow**: Draft, Submit, Approve/Reject workflow ensures all entries are reviewed before finalization
+- **Maker-Checker Workflow**: Draft, Submit, Approve/Reject workflow ensures all entries are reviewed before finalization.
 - **Role-Based Access Control**: Four distinct roles (Inputer, Authorizer, Viewer, Admin) with granular permissions
 - **Branch Data Isolation**: Users only access data for their assigned branch, with system-wide access for Admins and Viewers
 - **Denomination Tracking**: Track 11 currency denominations (1000, 500, 200, 100, 50, 20, 10, 5, 2, 1, coins) for complete cash accountability
